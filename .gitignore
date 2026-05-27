@@ -1,0 +1,40 @@
+# Environment
+.env
+*.local
+
+# Docker
+.docker/
+
+# Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+.next/
+build/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+data/cache/
