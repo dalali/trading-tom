@@ -1,0 +1,38 @@
+{
+  "project": "trading-tom",
+  "request": "Trading Tom — a paper-trading simulation bot for US stocks. Simulated-only trades, $10k virtual capital per account with auto-restart on bust, 3+ pluggable strategies (day/swing/position), anti-overfitting train/val/test splits, real-trading-platform dashboard (daily/weekly views, account switcher), VPS + Docker Compose deployment, Python BE + React FE.",
+  "phase": "prd",
+  "iteration": 1,
+  "trello": {
+    "boardId": "6a17469835084c7ba284579d",
+    "boardUrl": "https://trello.com/b/skxM0Gda",
+    "lists": {
+      "backlog": "6a17469f088ce4c7ae730e2f",
+      "analysis": "6a1746a0c107852f6cb7a8d1",
+      "design": "6a1746a07e5b3e617bfd680a",
+      "architecture": "6a1746a194ba0e279067fcc0",
+      "coding": "6a1746a1c3553cbe889245cf",
+      "review": "6a1746a1a17c7bda6f2d3c27",
+      "test": "6a1746a24756f9438b7fe573",
+      "security": "6a1746a2792f80aae60e2308",
+      "done": "6a1746a3cf0fb751c67accad"
+    },
+    "cards": {
+      "prd": "6a1746ac28b6e9610724ca53",
+      "design": "6a1746acc082df3448f905b8",
+      "architecture": "6a1746ad839b191dc7d45922",
+      "coding": "6a1746ade162aa73a658cf69",
+      "code-review": "6a1746ae01c75fb3f5ed19e7",
+      "qa": "6a1746ae1b92bad9c5113b66",
+      "security": "6a1746afa1c7577e2de8b916"
+    }
+  },
+  "branch": "",
+  "artifacts": {
+    "prd": "docs/PRD.md",
+    "design": "docs/design.md",
+    "architecture": "docs/architecture.md"
+  },
+  "issues": [],
+  "status": "running"
+}
