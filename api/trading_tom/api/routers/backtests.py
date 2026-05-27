@@ -1,7 +1,11 @@
 """Backtest run endpoints."""
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 
 from trading_tom.api.deps import get_db, require_operator_token
@@ -69,7 +73,8 @@ def run_backtest_endpoint(
         return BacktestRunOut.model_validate(run)
     except Exception as exc:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(exc))
+        logger.exception("Backtest failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Backtest failed; see server logs")
 
 
 @router.post(
@@ -107,4 +112,5 @@ def run_final_evaluation(
         return BacktestRunOut.model_validate(run)
     except Exception as exc:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(exc))
+        logger.exception("Final evaluation failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Final evaluation failed; see server logs")

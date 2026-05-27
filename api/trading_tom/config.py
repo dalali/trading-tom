@@ -1,6 +1,9 @@
 """Application settings loaded from environment variables."""
 from typing import Optional
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
+
+_WEAK_TOKENS = {"changeme", "secret", "password", "token", ""}
 
 
 class Settings(BaseSettings):
@@ -11,8 +14,17 @@ class Settings(BaseSettings):
     app_env: str = "development"
     debug: bool = False
 
-    # Operator auth
-    operator_token: str = "changeme"
+    # Operator auth — must be set; no default
+    operator_token: str
+
+    @field_validator("operator_token")
+    @classmethod
+    def token_must_be_strong(cls, v: str) -> str:
+        if v.lower() in _WEAK_TOKENS or len(v) < 32:
+            raise ValueError(
+                "OPERATOR_TOKEN must be set to a random string of at least 32 characters"
+            )
+        return v
 
     # Trading simulation
     starting_capital_cents: int = 1_000_000  # $10,000 in cents
