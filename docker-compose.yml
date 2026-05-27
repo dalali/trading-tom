@@ -8,6 +8,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dev} -d ${POSTGRES_DB:-trading_tom}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build: ./api
@@ -17,16 +22,27 @@ services:
       - ./api:/app
     env_file: .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
+
+  engine:
+    build: ./api
+    volumes:
+      - ./api:/app
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+    restart: unless-stopped
+    command: ["python", "-m", "trading_tom.engine.runner"]
 
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "3000:80"
     env_file: .env
     depends_on:
       - api

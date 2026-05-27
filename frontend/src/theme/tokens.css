@@ -1,0 +1,86 @@
+/* Design tokens from design.md §2.2 */
+:root {
+  /* Backgrounds */
+  --bg-base: #0B0E11;
+  --bg-surface: #151A21;
+  --bg-surface-2: #1C232C;
+
+  /* Borders */
+  --border-subtle: #2A323D;
+
+  /* Text */
+  --text-primary: #EAECEF;
+  --text-secondary: #9AA4B2;
+  --text-muted: #5C6773;
+
+  /* Accent */
+  --accent: #4C8DFF;
+
+  /* P&L */
+  --profit: #16C784;
+  --loss: #EA3943;
+
+  /* Status */
+  --warning: #F0B90B;
+  --info: #7B8FF7;
+
+  /* Paper pill */
+  --paper-pill-text: #F0B90B;
+  --paper-pill-bg: #2A2410;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Layout */
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 64px;
+  --max-content: 1440px;
+
+  /* Radius */
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Monospaced for all numeric/financial values */
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
