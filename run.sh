@@ -80,7 +80,7 @@ case "$CMD" in
     ;;
 
   psql)
-    docker compose exec db psql -U "${POSTGRES_USER:-dev}" -d "${POSTGRES_DB:-trading_tom}"
+    docker compose exec db psql -U "${POSTGRES_USER:-dev}" -d "${POSTGRES_DB:-trading_tom}" -p 5432
     ;;
 
   migrate)
