@@ -1,7 +1,7 @@
 {
   "project": "trading-tom",
   "request": "Trading Tom — a paper-trading simulation bot for US stocks. Simulated-only trades, $10k virtual capital per account with auto-restart on bust, 3+ pluggable strategies (day/swing/position), anti-overfitting train/val/test splits, real-trading-platform dashboard (daily/weekly views, account switcher), VPS + Docker Compose deployment, Python BE + React FE.",
-  "phase": "architecture",
+  "phase": "coding",
   "iteration": 1,
   "trello": {
     "boardId": "6a17469835084c7ba284579d",
