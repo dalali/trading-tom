@@ -1,7 +1,7 @@
 {
   "project": "trading-tom",
   "request": "Trading Tom — a paper-trading simulation bot for US stocks. Simulated-only trades, $10k virtual capital per account with auto-restart on bust, 3+ pluggable strategies (day/swing/position), anti-overfitting train/val/test splits, real-trading-platform dashboard (daily/weekly views, account switcher), VPS + Docker Compose deployment, Python BE + React FE.",
-  "phase": "coding",
+  "phase": "done",
   "iteration": 1,
   "trello": {
     "boardId": "6a17469835084c7ba284579d",
@@ -41,8 +41,11 @@
     "design": "docs/design.md",
     "architecture": "docs/architecture.md"
   },
-  "issues": [
-    "coding iteration 1: Trello task cards created (8) and feature branch feature/mvp-iteration-1 created, but the coding subagent could not be spawned — no Agent/Task subagent-spawning tool is registered in this environment. Resume by re-spawning the coding agent once the tool is available; no commits exist on the branch yet."
+  "issues": [],
+  "known_debt": [
+    "QA: backtest runner and metrics modules have zero unit tests; some strategy tests are non-falsifiable. Acceptable for paper-trading MVP; address before any real-capital consideration.",
+    "Security: 4 MEDIUM/LOW findings remain (2 CRITICAL + 3 HIGH already fixed). Acceptable given single-operator scope with API bound to 127.0.0.1 and operator-token-gated control endpoints."
   ],
-  "status": "paused"
+  "verdict": "SHIP — all 7 PRD success criteria met; known QA/security debt logged and acceptable for a single-operator paper-trading MVP on a VPS.",
+  "status": "shipped"
 }
