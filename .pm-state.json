@@ -24,15 +24,25 @@
       "coding": "6a1746ade162aa73a658cf69",
       "code-review": "6a1746ae01c75fb3f5ed19e7",
       "qa": "6a1746ae1b92bad9c5113b66",
-      "security": "6a1746afa1c7577e2de8b916"
+      "security": "6a1746afa1c7577e2de8b916",
+      "coding-1-task-1": "6a174a06ef467089bb6aa019",
+      "coding-1-task-2": "6a174a06b52446accbdecef5",
+      "coding-1-task-3": "6a174a070d561e9d85a89099",
+      "coding-1-task-4": "6a174a07a744b7a94f45b7bf",
+      "coding-1-task-5": "6a174a087f1763c434b8ab01",
+      "coding-1-task-6": "6a174a090428f38fb2bd4d29",
+      "coding-1-task-7": "6a174a09c517b4b0c1b0ab60",
+      "coding-1-task-8": "6a174a0920d1338282942a6a"
     }
   },
-  "branch": "",
+  "branch": "feature/mvp-iteration-1",
   "artifacts": {
     "prd": "docs/PRD.md",
     "design": "docs/design.md",
     "architecture": "docs/architecture.md"
   },
-  "issues": [],
-  "status": "running"
+  "issues": [
+    "coding iteration 1: Trello task cards created (8) and feature branch feature/mvp-iteration-1 created, but the coding subagent could not be spawned — no Agent/Task subagent-spawning tool is registered in this environment. Resume by re-spawning the coding agent once the tool is available; no commits exist on the branch yet."
+  ],
+  "status": "paused"
 }
