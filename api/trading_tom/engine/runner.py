@@ -172,6 +172,7 @@ def intraday_tick():
     except Exception as exc:
         logger.exception("intraday_tick error: %s", exc)
         try:
+            session.rollback()
             state = _get_or_create_engine_state(session)
             state.last_error = str(exc)
             session.commit()

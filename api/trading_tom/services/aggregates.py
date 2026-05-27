@@ -154,7 +154,7 @@ def compute_weekly_summary(session: Session, account: Account, week_start: date)
     return {
         "total_trades": len(trades),
         "win_rate": win_rate,
-        "gross_pnl_cents": net_pnl_cents,  # net of fees already
+        "gross_pnl_cents": net_pnl_cents + fees_cents,
         "net_pnl_cents": net_pnl_cents,
         "fees_cents": fees_cents,
         "avg_win_cents": avg_win_cents,
