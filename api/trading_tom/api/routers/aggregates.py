@@ -49,7 +49,10 @@ def daily_summary(
         raise HTTPException(status_code=404, detail="Account not found")
 
     if date_str:
-        d = date.fromisoformat(date_str)
+        try:
+            d = date.fromisoformat(date_str)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format; expected YYYY-MM-DD")
     else:
         d = _current_et_date()
 
@@ -96,7 +99,10 @@ def weekly_summary(
         raise HTTPException(status_code=404, detail="Account not found")
 
     if week_start_str:
-        week_start = date.fromisoformat(week_start_str)
+        try:
+            week_start = date.fromisoformat(week_start_str)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format; expected YYYY-MM-DD")
     else:
         week_start = _current_week_start()
 
