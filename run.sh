@@ -166,7 +166,7 @@ finally:
 
   backtest)
     # Usage: ./run.sh backtest <strategy> [symbol1 symbol2 ...]
-    STRATEGY=${2:-day_ma_cross}
+    STRATEGY=${2:-day}
     shift 2 || shift $#
     SYMBOLS=("$@")
     if [[ ${#SYMBOLS[@]} -eq 0 ]]; then
@@ -185,7 +185,7 @@ print(json.dumps([l.strip() for l in sys.stdin]))
 
   optimize)
     # Usage: ./run.sh optimize <strategy> [symbol1 symbol2 ...]
-    STRATEGY=${2:-day_ma_cross}
+    STRATEGY=${2:-day}
     shift 2 || shift $#
     SYMBOLS=("$@")
     if [[ ${#SYMBOLS[@]} -eq 0 ]]; then
@@ -202,7 +202,7 @@ print(json.dumps([l.strip() for l in sys.stdin]))
 
   final-eval)
     # Usage: ./run.sh final-eval <strategy> [symbol1 symbol2 ...]
-    STRATEGY=${2:-day_ma_cross}
+    STRATEGY=${2:-day}
     shift 2 || shift $#
     SYMBOLS=("$@")
     if [[ ${#SYMBOLS[@]} -eq 0 ]]; then
@@ -296,7 +296,7 @@ Backtesting:
   final-eval <strategy> [symbols...]   Honest out-of-sample eval on test split (once only!)
   backtests                            List all past backtest runs
 
-Strategies: day_ma_cross | swing_rsi | position_golden_cross
+Strategies: day | swing | position
 
 Accounts & Dashboard:
   accounts                     List all accounts (active + archived)
@@ -308,9 +308,9 @@ Examples:
   ./run.sh setup
   ./run.sh start
   ./run.sh backfill
-  ./run.sh backtest day_ma_cross SPY AAPL MSFT
-  ./run.sh optimize swing_rsi SPY
-  ./run.sh final-eval position_golden_cross SPY AAPL
+  ./run.sh backtest day SPY AAPL MSFT
+  ./run.sh optimize swing SPY
+  ./run.sh final-eval position SPY AAPL
   ./run.sh daily 2025-05-27
   ./run.sh weekly 2025-05-26
   ./run.sh logs engine
