@@ -25,7 +25,7 @@ class Account(Base):
     cash_cents = Column(BigInteger, nullable=False)
 
     __table_args__ = (
-        CheckConstraint("status IN ('active','archived')", name="ck_accounts_status"),
+        CheckConstraint("status IN ('active','archived','backtest')", name="ck_accounts_status"),
         CheckConstraint(
             "close_reason IN ('bust','manual') OR close_reason IS NULL",
             name="ck_accounts_close_reason",
