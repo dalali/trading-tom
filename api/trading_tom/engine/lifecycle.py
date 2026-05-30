@@ -86,23 +86,24 @@ def close_account(
 def create_new_account(
     session: Session,
     starting_capital_cents: int | None = None,
+    status: str = "active",
 ) -> Account:
     """
-    Create and flush a new active account.
-    Must be called AFTER the old account is archived in the same transaction.
+    Create and flush a new account. Pass status="backtest" when called from backtests
+    to avoid conflicting with the unique constraint on active accounts.
     """
     if starting_capital_cents is None:
         starting_capital_cents = settings.starting_capital_cents
 
     account = Account(
-        status="active",
+        status=status,
         created_at=datetime.now(timezone.utc),
         starting_capital_cents=starting_capital_cents,
         cash_cents=starting_capital_cents,
     )
     session.add(account)
     session.flush()
-    logger.info("New account #%d created with %dc", account.id, starting_capital_cents)
+    logger.info("New account #%d created (status=%s) with %dc", account.id, status, starting_capital_cents)
     return account
 
 
@@ -136,6 +137,7 @@ def bust_check_and_recycle(
     account: Account,
     latest_prices: dict[str, int],
     data_split: str = "live",
+    account_status: str = "active",
 ) -> Account:
     """
     Check if the account is busted; if so, archive it and create a new one.
@@ -151,5 +153,5 @@ def bust_check_and_recycle(
             settings.account_floor_cents,
         )
         close_account(session, account, close_reason="bust", data_split=data_split)
-        return create_new_account(session)
+        return create_new_account(session, status=account_status)
     return account

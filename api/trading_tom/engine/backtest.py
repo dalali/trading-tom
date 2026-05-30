@@ -85,9 +85,9 @@ def run_backtest(
     if len(all_ts) < 2:
         raise ValueError("Not enough bars for backtest (need at least 2)")
 
-    # Create a temporary in-session account (not persisted)
+    # Simulation account — status "backtest" avoids the one-active-account constraint
     account = Account(
-        status="active",
+        status="backtest",
         created_at=datetime.now(timezone.utc),
         starting_capital_cents=starting_capital_cents,
         cash_cents=starting_capital_cents,
@@ -162,7 +162,7 @@ def run_backtest(
                 logger.warning("Executor error: %s", e)
 
         # Bust check after each bar
-        account = bust_check_and_recycle(session, account, latest_prices, data_split=data_split)
+        account = bust_check_and_recycle(session, account, latest_prices, data_split=data_split, account_status="backtest")
 
     # Final equity
     final_prices = {
