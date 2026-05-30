@@ -1,17 +1,17 @@
 """
-Swing trading strategy: RSI mean-reversion with volume confirmation.
+Swing trading strategy: Double RSI mean-reversion with volume confirmation.
 
 Logic:
-  - RSI(period) on 1d bars.
-  - Buy when RSI < rsi_buy AND volume > vol_period-day avg * vol_mult.
-  - Sell when RSI > rsi_sell OR held for max_hold_days OR stop-loss hit.
+  - RSI(14) < rsi_buy AND RSI(2) < rsi2_entry AND volume > vol_period-day avg * vol_mult.
+  - Sell when RSI(14) > rsi_sell OR held for max_hold_days OR stop-loss hit.
 
 Parameters (from strategy_configs.params):
   rsi_period: int = 14
-  rsi_buy: int = 30       (oversold threshold)
-  rsi_sell: int = 75      (overbought threshold)
-  vol_period: int = 10    (volume SMA window for confirmation)
-  vol_mult: float = 1.5   (required volume multiple vs avg)
+  rsi_buy: int = 30        (RSI-14 oversold threshold)
+  rsi_sell: int = 75       (RSI-14 overbought exit)
+  rsi2_entry: int = 20     (RSI-2 further confirmation)
+  vol_period: int = 10     (volume SMA window for confirmation)
+  vol_mult: float = 1.5    (required volume multiple vs avg)
   max_hold_days: int = 10
   position_size_pct: float = 0.25
   max_positions: int = 3
@@ -74,6 +74,7 @@ class SwingRSIStrategy:
         rsi_period = int(params.get("rsi_period", 14))
         rsi_buy = float(params.get("rsi_buy", 30))
         rsi_sell = float(params.get("rsi_sell", 75))
+        rsi2_entry = float(params.get("rsi2_entry", 20))
         vol_period = int(params.get("vol_period", 10))
         vol_mult = float(params.get("vol_mult", 1.5))
         max_hold_days = int(params.get("max_hold_days", 10))
@@ -91,6 +92,7 @@ class SwingRSIStrategy:
             volumes = [b.volume for b in bars]
 
             rsi_val = _rsi(closes, rsi_period)
+            rsi2_val = _rsi(closes, 2)
             vol_avg = _sma(volumes, vol_period)
             latest_price = ctx.latest_price(symbol)
             current_vol = volumes[-1] if volumes else 0
@@ -98,25 +100,27 @@ class SwingRSIStrategy:
             if rsi_val is None or latest_price is None:
                 continue
 
-            # Volume confirmation: current bar volume must exceed avg * multiplier
             vol_confirmed = vol_avg is None or (vol_avg > 0 and current_vol >= vol_avg * vol_mult)
+            rsi2_confirmed = rsi2_val is None or rsi2_val < rsi2_entry
 
             pos = account.get_position(symbol)
 
-            # Entry: RSI oversold + volume spike confirmation
+            # Entry: RSI(14) oversold + RSI(2) confirms + volume spike
             if (
                 rsi_val < rsi_buy
+                and rsi2_confirmed
                 and vol_confirmed
                 and pos is None
                 and open_count < max_positions
             ):
                 qty = _compute_quantity(account.equity_cents, latest_price, position_size_pct)
                 if qty > 0:
+                    rsi2_str = f" rsi2={rsi2_val:.1f}" if rsi2_val is not None else ""
                     signals.append(Signal(
                         symbol=symbol,
                         side="buy",
                         quantity=qty,
-                        reason=f"{NAME}:rsi_oversold rsi={rsi_val:.1f} vol_ratio={current_vol/(vol_avg or 1):.1f}x",
+                        reason=f"{NAME}:rsi_oversold rsi={rsi_val:.1f}{rsi2_str} vol={current_vol/(vol_avg or 1):.1f}x",
                     ))
                     open_count += 1
 
