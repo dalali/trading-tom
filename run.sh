@@ -18,16 +18,30 @@ _require_token() {
 }
 
 _api_get() {
-  curl -sf "$API$1" | python3 -m json.tool 2>/dev/null || curl -sf "$API$1"
+  local resp http_code
+  resp=$(curl -s -w "\n%{http_code}" "$API$1")
+  http_code=$(tail -1 <<< "$resp")
+  body=$(sed '$d' <<< "$resp")
+  if [[ "$http_code" -ge 400 ]]; then
+    echo "Error $http_code: $body" >&2; return 1
+  fi
+  echo "$body" | python3 -m json.tool 2>/dev/null || echo "$body"
 }
 
 _api_post() {
   local path=$1; shift
   _require_token
-  curl -sf -X POST "$API$path" \
+  local resp http_code body
+  resp=$(curl -s -w "\n%{http_code}" -X POST "$API$path" \
     -H "Content-Type: application/json" \
     -H "X-Operator-Token: $OPERATOR_TOKEN" \
-    -d "${1:-{\}}" | python3 -m json.tool 2>/dev/null
+    -d "${1:-{\}}")
+  http_code=$(tail -1 <<< "$resp")
+  body=$(sed '$d' <<< "$resp")
+  if [[ "$http_code" -ge 400 ]]; then
+    echo "Error $http_code: $body" >&2; return 1
+  fi
+  echo "$body" | python3 -m json.tool 2>/dev/null || echo "$body"
 }
 
 case "$CMD" in
