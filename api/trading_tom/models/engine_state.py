@@ -6,10 +6,10 @@ from sqlalchemy import (
     Column,
     DateTime,
     Integer,
+    JSON,
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from trading_tom.db import Base
 
 
@@ -48,7 +48,7 @@ class StrategyConfig(Base):
 
     strategy_name = Column(String, primary_key=True)
     enabled = Column(Boolean, nullable=False, default=True)
-    params = Column(JSONB, nullable=False, default=dict)
+    params = Column(JSON, nullable=False, default=dict)
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,

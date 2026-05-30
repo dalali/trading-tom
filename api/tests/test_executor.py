@@ -120,10 +120,86 @@ class TestSellSignal:
         assert pos.quantity == 0
 
 
+class TestPartialSell:
+    def test_partial_sell_reduces_position_quantity(self, db_session):
+        """Selling fewer shares than held reduces quantity, does not close position."""
+        account = _make_account(db_session, cash_cents=5_000_000)
+        # Buy 10 shares
+        execute_signal(db_session, Signal("AAPL", "buy", 10, "test"), account, 10_000, "train")
+        # Sell 3 of them
+        trade = execute_signal(db_session, Signal("AAPL", "sell", 3, "test"), account, 12_000, "train")
+        db_session.commit()
+
+        pos = db_session.query(Position).filter_by(
+            account_id=account.id, symbol="AAPL"
+        ).first()
+        assert pos.quantity == 7, f"Expected 7 shares remaining, got {pos.quantity}"
+        assert pos.closed_at is None, "Position must remain open after partial sell"
+        assert trade.quantity == 3
+
+    def test_partial_sell_realized_pnl_uses_avg_entry(self, db_session):
+        """Partial sell P&L = (fill - avg_entry) * qty - fee."""
+        account = _make_account(db_session, cash_cents=5_000_000)
+        execute_signal(db_session, Signal("MSFT", "buy", 10, "test"), account, 20_000, "train")
+        trade = execute_signal(db_session, Signal("MSFT", "sell", 4, "test"), account, 25_000, "train")
+        db_session.commit()
+
+        # P&L = (25_000 - 20_000) * 4 - fee
+        expected_pnl = (25_000 - 20_000) * 4 - trade.fee_cents
+        assert trade.realized_pnl_cents == expected_pnl
+
+
+class TestSellErrors:
+    def test_sell_more_than_held_raises_executor_error(self, db_session):
+        """Attempting to sell more shares than held raises ExecutorError."""
+        from trading_tom.engine.executor import ExecutorError
+        account = _make_account(db_session, cash_cents=1_000_000)
+        execute_signal(db_session, Signal("AAPL", "buy", 5, "test"), account, 10_000, "train")
+
+        with pytest.raises(ExecutorError):
+            execute_signal(db_session, Signal("AAPL", "sell", 10, "test"), account, 10_000, "train")
+
+    def test_sell_with_no_position_raises_executor_error(self, db_session):
+        """Selling a symbol we don't hold raises ExecutorError."""
+        from trading_tom.engine.executor import ExecutorError
+        account = _make_account(db_session, cash_cents=1_000_000)
+
+        with pytest.raises(ExecutorError):
+            execute_signal(db_session, Signal("NVDA", "sell", 1, "test"), account, 50_000, "train")
+
+    def test_unknown_signal_side_raises_executor_error(self, db_session):
+        """A signal with side='short' (unknown) raises ExecutorError."""
+        from trading_tom.engine.executor import ExecutorError
+        account = _make_account(db_session, cash_cents=1_000_000)
+
+        with pytest.raises(ExecutorError, match="Unknown side"):
+            execute_signal(db_session, Signal("AAPL", "short", 5, "test"), account, 10_000, "train")
+
+
+class TestFeeIndependence:
+    def test_fee_independently_recalculated_matches_trade(self, db_session):
+        """
+        Fee stored in the trade must match independently calculated fee.
+
+        This verifies the executor calls compute_fee() correctly rather than
+        trusting any externally-provided fee value.
+        """
+        from trading_tom.engine.fees import compute_fee
+        account = _make_account(db_session, cash_cents=5_000_000)
+        execute_signal(db_session, Signal("AAPL", "buy", 50, "test"), account, 20_000, "train")
+        trade = execute_signal(db_session, Signal("AAPL", "sell", 50, "test"), account, 22_000, "train")
+        db_session.commit()
+
+        expected_fee = compute_fee("sell", shares=50, price_cents=22_000)
+        assert trade.fee_cents == expected_fee, (
+            f"Trade fee ({trade.fee_cents}) must equal independently computed fee ({expected_fee})"
+        )
+
+
 class TestAccountRecycling:
     def test_busted_account_is_archived_and_new_created(self, db_session):
-        # Create a nearly-empty account
-        account = _make_account(db_session, cash_cents=100)  # $0.01
+        # Create a zero-cash account — equity=0 which is <= account_floor_cents(0)
+        account = _make_account(db_session, cash_cents=0)
         db_session.commit()
 
         latest_prices: dict[str, int] = {}

@@ -8,9 +8,9 @@ from sqlalchemy import (
     DateTime,
     Index,
     Integer,
+    JSON,
     String,
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from trading_tom.db import Base
 
 
@@ -19,13 +19,13 @@ class BacktestRun(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     strategy_name = Column(String, nullable=False)
-    params = Column(JSONB, nullable=False)
+    params = Column(JSON, nullable=False)
     data_split = Column(String, nullable=False)
-    symbols = Column(JSONB, nullable=False)
+    symbols = Column(JSON, nullable=False)
     period_start = Column(DateTime(timezone=True), nullable=False)
     period_end = Column(DateTime(timezone=True), nullable=False)
     seed = Column(Integer, nullable=False, default=42)
-    metrics = Column(JSONB, nullable=False, default=dict)
+    metrics = Column(JSON, nullable=False, default=dict)
     final_evaluation = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 

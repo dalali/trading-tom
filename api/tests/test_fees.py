@@ -44,9 +44,10 @@ class TestFinraTaf:
         assert result == 727  # capped
 
     def test_just_below_cap(self):
-        # 5,000 shares * $0.000145 = $0.725 → 72.5 cents → round = 73 cents (< 727)
+        # 5,000 shares * $0.000145 = $0.725 → 72.5 cents
+        # Decimal.to_integral_value() uses ROUND_HALF_EVEN (banker's rounding) → 72
         result = _finra_taf_cents(5_000)
-        assert result == 73
+        assert result == 72
 
 
 class TestComputeFee:
