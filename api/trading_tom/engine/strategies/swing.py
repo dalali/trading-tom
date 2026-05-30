@@ -1,19 +1,21 @@
 """
-Swing trading strategy: RSI mean-reversion.
+Swing trading strategy: RSI mean-reversion with volume confirmation.
 
 Logic:
   - RSI(period) on 1d bars.
-  - Buy when RSI < rsi_buy AND price > sma_trend-day SMA (trend filter).
-  - Sell when RSI > rsi_sell OR held for max_hold_days.
+  - Buy when RSI < rsi_buy AND volume > vol_period-day avg * vol_mult.
+  - Sell when RSI > rsi_sell OR held for max_hold_days OR stop-loss hit.
 
 Parameters (from strategy_configs.params):
   rsi_period: int = 14
-  rsi_buy: int = 30      (oversold threshold)
-  rsi_sell: int = 60     (overbought threshold)
-  sma_trend: int = 50    (trend filter SMA period)
+  rsi_buy: int = 30       (oversold threshold)
+  rsi_sell: int = 75      (overbought threshold)
+  vol_period: int = 10    (volume SMA window for confirmation)
+  vol_mult: float = 1.5   (required volume multiple vs avg)
   max_hold_days: int = 10
-  position_size_pct: float = 0.10
-  max_positions: int = 5
+  position_size_pct: float = 0.25
+  max_positions: int = 3
+  stop_loss_pct: float = 0.05
 """
 from __future__ import annotations
 
@@ -61,7 +63,7 @@ class SwingRSIStrategy:
     name = NAME
 
     def required_history(self) -> int:
-        return 65  # enough for RSI(14) + SMA(50)
+        return 30  # enough for RSI(14) + vol_period(10)
 
     def generate_signals(
         self,
@@ -69,10 +71,11 @@ class SwingRSIStrategy:
         account: AccountView,
         params: dict,
     ) -> list[Signal]:
-        rsi_period = int(params.get("rsi_period", 10))
-        rsi_buy = float(params.get("rsi_buy", 25))
+        rsi_period = int(params.get("rsi_period", 14))
+        rsi_buy = float(params.get("rsi_buy", 30))
         rsi_sell = float(params.get("rsi_sell", 75))
-        sma_trend = int(params.get("sma_trend", 50))
+        vol_period = int(params.get("vol_period", 10))
+        vol_mult = float(params.get("vol_mult", 1.5))
         max_hold_days = int(params.get("max_hold_days", 10))
         position_size_pct = float(params.get("position_size_pct", 0.25))
         max_positions = int(params.get("max_positions", 3))
@@ -85,20 +88,25 @@ class SwingRSIStrategy:
             if not bars:
                 continue
             closes = [b.close_cents for b in bars]
+            volumes = [b.volume for b in bars]
 
             rsi_val = _rsi(closes, rsi_period)
-            sma_val = _sma(closes, sma_trend)
+            vol_avg = _sma(volumes, vol_period)
             latest_price = ctx.latest_price(symbol)
+            current_vol = volumes[-1] if volumes else 0
 
-            if rsi_val is None or sma_val is None or latest_price is None:
+            if rsi_val is None or latest_price is None:
                 continue
+
+            # Volume confirmation: current bar volume must exceed avg * multiplier
+            vol_confirmed = vol_avg is None or (vol_avg > 0 and current_vol >= vol_avg * vol_mult)
 
             pos = account.get_position(symbol)
 
-            # Entry: RSI oversold + above trend SMA
+            # Entry: RSI oversold + volume spike confirmation
             if (
                 rsi_val < rsi_buy
-                and latest_price > sma_val
+                and vol_confirmed
                 and pos is None
                 and open_count < max_positions
             ):
@@ -108,7 +116,7 @@ class SwingRSIStrategy:
                         symbol=symbol,
                         side="buy",
                         quantity=qty,
-                        reason=f"{NAME}:rsi_oversold rsi={rsi_val:.1f}",
+                        reason=f"{NAME}:rsi_oversold rsi={rsi_val:.1f} vol_ratio={current_vol/(vol_avg or 1):.1f}x",
                     ))
                     open_count += 1
 
