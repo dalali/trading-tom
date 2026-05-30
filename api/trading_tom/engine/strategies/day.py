@@ -43,10 +43,10 @@ def _compute_quantity(
     max_positions: int,
     current_positions: int,
 ) -> int:
-    """Fixed fractional sizing: floor(equity * pct / price), capped by max_positions."""
+    """Fixed fractional sizing: floor(equity * pct / price), capped by max_positions slots."""
     if current_positions >= max_positions or price_cents <= 0:
         return 0
-    target_value = equity_cents * position_size_pct / max_positions
+    target_value = equity_cents * position_size_pct
     return max(0, int(target_value / price_cents))
 
 
@@ -64,7 +64,7 @@ class DayMACrossStrategy:
     ) -> list[Signal]:
         fast_ma = int(params.get("fast_ma", 9))
         slow_ma = int(params.get("slow_ma", 21))
-        position_size_pct = float(params.get("position_size_pct", 0.05))
+        position_size_pct = float(params.get("position_size_pct", 0.30))
         max_positions = int(params.get("max_positions", 3))
 
         signals: list[Signal] = []
