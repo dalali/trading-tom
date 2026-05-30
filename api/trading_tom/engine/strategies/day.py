@@ -62,10 +62,11 @@ class DayMACrossStrategy:
         account: AccountView,
         params: dict,
     ) -> list[Signal]:
-        fast_ma = int(params.get("fast_ma", 9))
-        slow_ma = int(params.get("slow_ma", 21))
+        fast_ma = int(params.get("fast_ma", 5))
+        slow_ma = int(params.get("slow_ma", 20))
         position_size_pct = float(params.get("position_size_pct", 0.30))
         max_positions = int(params.get("max_positions", 3))
+        stop_loss_pct = float(params.get("stop_loss_pct", 0.08))
 
         signals: list[Signal] = []
         watchlist = list(ctx.bars.keys())
@@ -113,6 +114,17 @@ class DayMACrossStrategy:
                     quantity=pos.quantity,
                     reason=f"{NAME}:bearish_cross",
                 ))
+
+            # Stop-loss: exit if position is down more than stop_loss_pct
+            elif pos is not None and pos.quantity > 0:
+                price = ctx.latest_price(symbol)
+                if price and price < pos.avg_entry_price_cents * (1 - stop_loss_pct):
+                    signals.append(Signal(
+                        symbol=symbol,
+                        side="sell",
+                        quantity=pos.quantity,
+                        reason=f"{NAME}:stop_loss",
+                    ))
 
         return signals
 

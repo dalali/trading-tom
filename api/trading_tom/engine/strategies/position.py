@@ -49,10 +49,11 @@ class PositionGoldenCrossStrategy:
         account: AccountView,
         params: dict,
     ) -> list[Signal]:
-        sma_fast = int(params.get("sma_fast", 50))
-        sma_slow = int(params.get("sma_slow", 200))
-        position_size_pct = float(params.get("position_size_pct", 0.20))
-        max_positions = int(params.get("max_positions", 5))
+        sma_fast = int(params.get("sma_fast", 20))
+        sma_slow = int(params.get("sma_slow", 50))
+        position_size_pct = float(params.get("position_size_pct", 0.25))
+        max_positions = int(params.get("max_positions", 3))
+        stop_loss_pct = float(params.get("stop_loss_pct", 0.10))
 
         signals: list[Signal] = []
         open_count = sum(1 for p in account.open_positions if p.quantity > 0)
@@ -104,5 +105,15 @@ class PositionGoldenCrossStrategy:
                     quantity=pos.quantity,
                     reason=f"{NAME}:death_cross sma{sma_fast}<{sma_slow}",
                 ))
+
+            # Stop-loss: exit if position down more than stop_loss_pct
+            elif pos is not None and pos.quantity > 0 and latest_price is not None:
+                if latest_price < pos.avg_entry_price_cents * (1 - stop_loss_pct):
+                    signals.append(Signal(
+                        symbol=symbol,
+                        side="sell",
+                        quantity=pos.quantity,
+                        reason=f"{NAME}:stop_loss",
+                    ))
 
         return signals

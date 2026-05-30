@@ -69,13 +69,14 @@ class SwingRSIStrategy:
         account: AccountView,
         params: dict,
     ) -> list[Signal]:
-        rsi_period = int(params.get("rsi_period", 14))
-        rsi_buy = float(params.get("rsi_buy", 30))
-        rsi_sell = float(params.get("rsi_sell", 60))
+        rsi_period = int(params.get("rsi_period", 10))
+        rsi_buy = float(params.get("rsi_buy", 25))
+        rsi_sell = float(params.get("rsi_sell", 75))
         sma_trend = int(params.get("sma_trend", 50))
         max_hold_days = int(params.get("max_hold_days", 10))
-        position_size_pct = float(params.get("position_size_pct", 0.10))
-        max_positions = int(params.get("max_positions", 5))
+        position_size_pct = float(params.get("position_size_pct", 0.25))
+        max_positions = int(params.get("max_positions", 3))
+        stop_loss_pct = float(params.get("stop_loss_pct", 0.05))
 
         signals: list[Signal] = []
         open_count = sum(1 for p in account.open_positions if p.quantity > 0)
@@ -117,8 +118,14 @@ class SwingRSIStrategy:
                 entry_approx = bars[-1].ts - timedelta(days=max_hold_days)
                 max_hold_exceeded = bars[0].ts < entry_approx  # rough check
 
-                if rsi_val > rsi_sell or max_hold_exceeded:
-                    reason = "rsi_overbought" if rsi_val > rsi_sell else "max_hold_exceeded"
+                stop_hit = latest_price < pos.avg_entry_price_cents * (1 - stop_loss_pct)
+                if rsi_val > rsi_sell or max_hold_exceeded or stop_hit:
+                    if stop_hit:
+                        reason = "stop_loss"
+                    elif rsi_val > rsi_sell:
+                        reason = "rsi_overbought"
+                    else:
+                        reason = "max_hold_exceeded"
                     signals.append(Signal(
                         symbol=symbol,
                         side="sell",
